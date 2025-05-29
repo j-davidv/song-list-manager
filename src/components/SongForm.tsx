@@ -1,16 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { Song, Sunday } from '../types';
-import { Save, X } from 'lucide-react';
+import { Save, X, Loader2 } from 'lucide-react';
 import { formatSunday } from '../utils/format';
 
 interface SongFormProps {
   song?: Song;
   sunday?: Sunday;
-  onSave: (songData: Omit<Song, 'id' | 'createdAt' | 'updatedAt' | 'createdBy'>) => void;
+  onSave: (songData: Omit<Song, 'id' | 'createdAt' | 'updatedAt' | 'createdBy'>) => Promise<void>;
   onCancel: () => void;
 }
 
 const SongForm: React.FC<SongFormProps> = ({ song, sunday, onSave, onCancel }) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
     key: '',
@@ -31,9 +32,16 @@ const SongForm: React.FC<SongFormProps> = ({ song, sunday, onSave, onCancel }) =
     }
   }, [song]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onSave(formData);
+    setIsSubmitting(true);
+    try {
+      await onSave(formData);
+    } catch (error) {
+      console.error('Error submitting form:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const sundayOptions: Sunday[] = ['first', 'second', 'third', 'fourth', 'fifth'];
@@ -131,18 +139,24 @@ const SongForm: React.FC<SongFormProps> = ({ song, sunday, onSave, onCancel }) =
               </select>
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-3 pt-4 sm:pt-6">
+            <div className="flex gap-4">
               <button
                 type="submit"
-                className="flex-1 bg-gradient-to-r from-blue-600 to-blue-600 text-white px-6 py-3 rounded-xl hover:from-blue-700 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 flex items-center justify-center text-sm sm:text-base font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+                disabled={isSubmitting}
+                className="flex-1 bg-gradient-to-r from-blue-600 to-blue-600 text-white px-6 py-3 rounded-xl hover:from-blue-700 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 flex items-center justify-center text-sm sm:text-base font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
               >
-                <Save className="w-4 h-4 mr-2" />
-                Save Song
+                {isSubmitting ? (
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                ) : (
+                  <Save className="w-4 h-4 mr-2" />
+                )}
+                {isSubmitting ? 'Saving...' : 'Save Song'}
               </button>
               <button
                 type="button"
                 onClick={onCancel}
-                className="flex-1 bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700 px-6 py-3 rounded-xl hover:from-gray-200 hover:to-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 flex items-center justify-center text-sm sm:text-base font-semibold border border-gray-300 transition-all duration-200 transform hover:scale-105"
+                disabled={isSubmitting}
+                className="flex-1 bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700 px-6 py-3 rounded-xl hover:from-gray-200 hover:to-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 flex items-center justify-center text-sm sm:text-base font-semibold border border-gray-300 transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
               >
                 <X className="w-4 h-4 mr-2" />
                 Cancel

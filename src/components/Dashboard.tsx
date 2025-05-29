@@ -127,6 +127,7 @@ const Dashboard: React.FC = () => {
     } catch (error) {
       console.error('Error saving song:', error);
       toast.error('Error saving song');
+      throw error; // Re-throw the error to be caught by the form
     }
   };
 
