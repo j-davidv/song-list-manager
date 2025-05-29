@@ -32,10 +32,15 @@ export const useAuth = () => {
   return context;
 };
 
-// Admin credentials - in production, these should be environment variables
+// Verify admin credentials are set
+if (!process.env.REACT_APP_ADMIN_USERNAME || !process.env.REACT_APP_ADMIN_PASSWORD) {
+  throw new Error('Admin credentials not configured. Please set REACT_APP_ADMIN_USERNAME and REACT_APP_ADMIN_PASSWORD in your environment variables.');
+}
+
+// Admin credentials from environment variables
 const ADMIN_CREDENTIALS = {
-  username: process.env.REACT_APP_ADMIN_USERNAME || 'admin',
-  password: process.env.REACT_APP_ADMIN_PASSWORD || 'admin123'
+  username: process.env.REACT_APP_ADMIN_USERNAME,
+  password: process.env.REACT_APP_ADMIN_PASSWORD
 };
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
